@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Go Game</title>
+    <script src="https://cdn.socket.io/4.0.0/socket.io.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+</head>
+<body>
+    <h1>Go Game</h1>
+    <button onclick="createGame()">Create Game</button>
+    <button onclick="joinGame()">Join Game</button>
+    <div id="game_id"></div>
+    <ul id="messages"></ul>
+
+    <script type="text/javascript">
+        var socket = io();
+
+        function createGame() {
+            $.post('/create_game', function(data) {
+                $('#game_id').text('Game ID: ' + data.game_id);
+                joinRoom(data.game_id);
+            });
+        }
+
+        function joinGame() {
+            var gameId = prompt('Enter Game ID:');
+            var color = prompt('Enter Color (black/white):');
+            $.post('/join_game', JSON.stringify({game_id: gameId, color: color}), function(data) {
+                $('#game_id').text('Game ID: ' + gameId);
+                joinRoom(gameId);
+            }, 'json');
+        }
+
+        function joinRoom(gameId) {
+            socket.emit('join', {game_id: gameId});
+        }
+
+        socket.on('status', function(data) {
+            var li = document.createElement('li');
+            li.appendChild(document.createTextNode(data.msg));
+            document.getElementById('messages').appendChild(li);
+        });
+    </script>
+</body>
+</html>
